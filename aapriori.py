@@ -19,7 +19,7 @@ class apiori:
                 i = 1
                 
                 x= re.split(" |\n|,",line)
-                print(x)
+                #print(x)
                 while i < x.__len__():
                     if x[i] != "":
                         #item.add(x[i])
@@ -28,22 +28,58 @@ class apiori:
             dataItem=sorted(dataItem)
         #print(dataItem)
         #print(transact)
-        self.aprioriFucn(dataItem, transact)
+        given=input("given confidence ")
+        print(given)
+        expect=input("expected confidence ")
+        print(expect)
+        stri=given+","+expect
+        print(stri)
+        self.aprioriFucn(dataItem, transact,given,expect,stri)
         
         
         
-    def aprioriFucn(self,dataItem,transact):
-        print(self.checkSubsetAndMakeCandidateTable(dataItem,transact))
+    def aprioriFucn(self,dataItem,transact,given,expect,stri):
+        
+        giv=0
+        get=0
+        minimumSupport=self.checkSubset(dataItem,transact)
+        print(minimumSupport)
+        givenValue,getValue=self.checkConfidence(minimumSupport,given,expect,stri)
+        if givenValue!=0:
+            giv=givenValue
+        if getValue!=0:
+            get=getValue
         candidateTable=dataItem
         i=0
-        while i<3:
+        while i<2:
             candidateTable=self.makeCandidateTable(candidateTable)
             
-            print(self.checkSubsetAndMakeCandidateTable(candidateTable,transact))
+            minimumSupport=(self.checkSubset(candidateTable,transact))
+            print(minimumSupport)
+            givenValue,getValue=self.checkConfidence(minimumSupport,given,expect,stri)
+            if givenValue!=0:
+               giv=givenValue
+            if getValue!=0:
+               get=getValue
             '''can2=self.makeCandidateTable(candidateTable)
             print(self.checkSubsetAndMakeCandidateTable(can2,transact))'''
             i+=1
+        print(giv)
+        print((get/giv)*100)
 
+    def checkConfidence(self,minimumSupport,given,expect,stri):
+        #print(minimumSupport)
+        givenValue, getValue=0,0
+        for x in minimumSupport:
+            
+            if x==given:
+                givenValue=minimumSupport[x]
+                print(givenValue)
+            elif x==stri:
+                getValue=minimumSupport[x]
+                print(getValue)
+        return givenValue, getValue
+                
     def makeCandidateTable(self,dataSet):
         
         finalList=list()
@@ -68,10 +104,10 @@ class apiori:
             i+=1
         
         returnList=sorted(finalList)
-        print(returnList)
+        #print(returnList)
         return returnList
 
-    def checkSubsetAndMakeCandidateTable(self, finalList,transact):
+    def checkSubset(self, finalList,transact):
         flag=0
         candidateTable={}
         #print(transact)
@@ -96,4 +132,10 @@ class apiori:
             i += 1
         return candidateTable
 
+    #def getConfidence(self):
+        #print("given confidence ")
+        
+        #self.aprioriFucn(dataItem, transact)
+
 apiori().readFile()
+
