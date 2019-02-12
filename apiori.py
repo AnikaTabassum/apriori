@@ -3,128 +3,149 @@ class apiori:
     def __init__(self):
         "do "
 
+
     def readFile(self):
-        dataset = list()
+        dataItem = set()
         transact=list()
 
         with open("data.txt") as file:
             for line in file:
                 # x=line.split(",")
-                x = re.split(",|\n", line)
+                
+                x = re.split(" |\n", line)
                 # dataset.append(x)
-                transact.append(x)
+                transact.append(x[1])
+                
                 i = 1
-
+                
+                x= re.split(" |\n|,",line)
+                #print(x)
                 while i < x.__len__():
                     if x[i] != "":
                         #item.add(x[i])
-                        dataset.append(x[i])
+                        dataItem.add(x[i])
                     i += 1
-
+            dataItem=sorted(dataItem)
+        #print(dataItem)
         #print(transact)
-        item=set(dataset)
-        item=sorted(item)
-        print(item)
-        supportForOne = self.makeCandidateSet(item, dataset)
+        given=input("given confidence ")
+        print(given)
+        expect=input("expected confidence ")
+        print(expect)
+        stri=given+","+expect
+        print(stri)
+        temp=stri.split(",")
+        temp=sorted(temp)
+        print(temp)
+        stri=""
+        for i in range(temp.__len__()):
+            stri+=str(temp[i])
+            if i<temp.__len__()-1:
+                stri+=","
+        print(stri)
+        self.aprioriFucn(dataItem, transact,given,expect,stri)
+        
+        
+        
+    def aprioriFucn(self,dataItem,transact,given,expect,stri):
+        
+        giv=0
+        get=0
+        minimumSupport=self.checkSubset(dataItem,transact)
+        print(minimumSupport)
+        givenValue,getValue=self.checkConfidence(minimumSupport,given,expect,stri)
+        if givenValue!=0:
+            giv=givenValue
+        if getValue!=0:
+            get=getValue
+        candidateTable=dataItem
+        i=0
+        while i<2:
+            candidateTable=self.makeCandidateTable(candidateTable)
+            
+            minimumSupport=(self.checkSubset(candidateTable,transact))
+            print(minimumSupport)
+            givenValue,getValue=self.checkConfidence(minimumSupport,given,expect,stri)
+            if givenValue!=0:
+               giv=givenValue
+            if getValue!=0:
+               get=getValue
+            '''can2=self.makeCandidateTable(candidateTable)
+            print(self.checkSubsetAndMakeCandidateTable(can2,transact))'''
+            i+=1
+        print(giv)
+        print((get/giv)*100)
 
-        itemSetL1 = self.minimumSupport(supportForOne, item)
-        currentLset = self.joinSet(itemSetL1, 2)
-        listMake=list(list(currentLset))
-        #print(listMake)
-        itemSetL2=self.checkSubsetAndMakeCandidateTable(transact,currentLset)
-        currentL2set=self.joinSet(itemSetL2,3)
-
-
-    def makeCandidateSet(self, item, dataset):
-        support = {}
-        stringList=list()
-        string=""
-        for value in item:
-            # for value in item:
-            i = 0
-            cnt = 0
-            stringList.append(value)
-            string+=value
-            while i < dataset.__len__():
-                # print(dataset[i])
-                # print(value)
-
-                if value == dataset[i]:
-                    cnt += 1
-                support[value] = cnt
-                i += 1
-
-
-        return support
-
-    def minimumSupport(self, minimum, item):
-        i = 0
-        itemSet = {}
-        for value in item:
-            if minimum.get(value) >= 2:
-                itemSet[value] = minimum.get(value)
-        return itemSet
-        # print(minimum.get(value))
-
-    def joinSet(self, itemSet, length):
-        # return set([i.union(j) for i in itemSet for j in itemSet if len(i.union(j)) == length])
-        strg=""
-        print(itemSet)
+    def checkConfidence(self,minimumSupport,given,expect,stri):
+        #print(minimumSupport)
+        givenValue, getValue=0,0
+        for x in minimumSupport:
+            
+            if x==given:
+                givenValue=minimumSupport[x]
+                print(givenValue)
+            elif x==stri:
+                getValue=minimumSupport[x]
+                print(getValue)
+        return givenValue, getValue
+                
+    def makeCandidateTable(self,dataSet):
+        print("lol")
+        print(dataSet)
         finalList=list()
-        for i in itemSet:
-            newSet = set()
-            newSet.add(i)
+        i=0
+        while i <dataSet.__len__():
+            j=i+1
+            temp = dataSet[i].split(",")
+            while j < dataSet.__len__():
+                lis = dataSet[j].split(",")
+                f = 0
+                x=0
+                while x<lis.__len__()-1:
+                    if temp[x] != lis[x]:
+                       f = 1
+                    x+=1
+                if f==0:
+                    #print(dataSet[i])
+                    new = dataSet[i] + "," + lis[lis.__len__()-1]
 
-            for j in itemSet:
-                if newSet.__len__() == length - 1:
-                    newSet.add(j)
-                    #print(newSet.__len__())
-                    if newSet.__len__()==length:
 
-                        temp=set(newSet)
-                        strg+=str(newSet)
-                        finalList.append(temp)
-                        #print(strg)
-                    newSet.remove(j)
-        #print(finalList)
-        return finalList
+                    finalList.append(new)
+                j+=1
+            i+=1
+        tempSet=set(finalList)
+        returnList=sorted(tempSet)
+        print(returnList)
+        return returnList
 
-    def checkSubsetAndMakeCandidateTable(self, transact, finalList):
+    def checkSubset(self, finalList,transact):
         flag=0
         candidateTable={}
-        print(transact)
+        #print(transact)
         temp=list()
         for value in finalList:
-            temp.append(list(value))
-
+            temp.append(str(value))
         i=0
         while i < temp.__len__():
+            #print(temp[i])
             j=0
             cnt=0
             while j< transact.__len__():
+                #print(transact[j])
                 if (all(x in transact[j] for x in temp[i])):
                     cnt+=1
                     #print("fdsf")
                 j+=1
-
+            
             if cnt>=2:
-
-                '''strp= re.split('[|]', stra)
-                print(strp)'''
-                tem=""
-                lop="', '"
-                u=0
-                while u<temp[i].__len__():
-                    tem+=str(temp[i][u])
-                    u+=1
-                    if u<temp[i].__len__():
-                        tem+=lop
-                    #u+=1
-                candidateTable[tem]=cnt
+                candidateTable[temp[i]]=cnt
+            #print("cnt"+str(cnt))
             i += 1
-
-
-        print(candidateTable)
         return candidateTable
+
+    #def getConfidence(self):
+        #print("given confidence ")
+        
+        #self.aprioriFucn(dataItem, transact)
 
 apiori().readFile()
